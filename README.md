@@ -4,7 +4,11 @@ A modern appliance repair pricing calculator designed for homeowners and local a
 
 ## Live Demo
 
+Main Website:
 https://appliancerepairjupiter.com/appliance-repair-cost-estimator/
+
+GitHub Pages:
+https://saithsubhan.github.io/appliance-repair-cost-estimator/
 
 ---
 
