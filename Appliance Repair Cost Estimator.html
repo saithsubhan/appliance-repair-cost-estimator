@@ -1,0 +1,580 @@
+<div id="adi-cost-widget">
+  <style>
+    /* ----- RESET & BASE ----- */
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif; }
+    #adi-cost-widget { max-width: 860px; border-radius: 32px; background: white; box-shadow: 0 30px 60px -15px rgba(11, 30, 51, 0.3), 0 15px 30px -10px rgba(241, 90, 36, 0.2); overflow: hidden; transition: all 0.3s ease; margin: 0 auto; border: 1px solid rgba(241, 90, 36, 0.15); }
+   
+    /* ----- HEADER (#0B1E33 dark blue) ----- */
+    .adi-header { background: #0B1E33; padding: 1rem 2rem; display: flex; align-items: center; gap: 16px; color: white; }
+    .adi-header-icon { background: #F15A24; width: 48px; height: 48px; border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 2rem; box-shadow: 0 12px 20px -10px #F15A24; transform: rotate(-5deg); transition: transform 0.3s; }
+    .adi-header-icon:hover { transform: rotate(0deg); }
+    .adi-header-title { font-weight: 700; font-size: 1.4rem; letter-spacing: -0.3px; }
+    .adi-header-badge { background: #F15A24; color: white; padding: 0.35rem 1.4rem; border-radius: 40px; font-size: 0.85rem; font-weight: 600; margin-left: auto; box-shadow: inset 0 -2px 5px rgba(0,0,0,0.1); text-transform: uppercase; letter-spacing: 0.5px; }
+   
+    /* ----- PROGRESS BAR ----- */
+    .adi-progress { height: 8px; background: #e9eef3; width: 100%; }
+    .adi-progress-fill { height: 8px; background: linear-gradient(90deg, #F15A24, #ff8a5c); width: 25%; transition: width 0.4s cubic-bezier(0.2, 0.9, 0.3, 1.2); border-radius: 0 4px 4px 0; position: relative; overflow: hidden; }
+    .adi-progress-fill::after { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent); animation: shimmer 1.5s infinite; }
+    @keyframes shimmer { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+   
+    /* ----- MAIN CONTAINER ----- */
+    .adi-step-container { padding: 2.5rem 2.5rem 2rem; transition: opacity 0.3s ease; opacity: 1; }
+   
+    /* ----- STEP HEADER ----- */
+    .adi-step-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 2rem; }
+    .adi-step-question { font-weight: 700; font-size: 1.5rem; color: #0B1E33; position: relative; padding-bottom: 5px; }
+    .adi-step-question::after { content: ''; position: absolute; bottom: 0; left: 0; width: 60px; height: 3px; background: #F15A24; border-radius: 3px; }
+    .adi-step-counter { background: #f1f5f9; padding: 0.4rem 1.4rem; border-radius: 60px; font-weight: 600; color: #0B1E33; font-size: 0.9rem; border: 1px solid #dde3ea; }
+   
+    /* ----- OPTIONS GRID ----- */
+    .adi-options-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin: 2rem 0 2.5rem; animation: fadeIn 0.4s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .adi-option-card { background: #f8fafd; border: 2px solid #e2e8f0; border-radius: 30px; padding: 1.2rem 1.2rem 1.2rem 1.8rem; font-weight: 600; color: #1e293b; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; gap: 12px; font-size: 1rem; box-shadow: 0 4px 8px rgba(0,0,0,0.02); position: relative; overflow: hidden; }
+    .adi-option-card:hover { border-color: #F15A24; background: #fff6f0; transform: translateY(-3px); box-shadow: 0 15px 25px -15px #F15A24; }
+    .adi-option-card.selected { background: #F15A24; border-color: #F15A24; color: white; box-shadow: 0 20px 30px -15px #F15A24; }
+    .adi-option-card input { display: none; }
+    .adi-option-card::before { content: '✓'; position: absolute; right: -20px; top: -10px; width: 40px; height: 40px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: 0.3s; opacity: 0; }
+    .adi-option-card.selected::before { right: 10px; opacity: 1; }
+   
+    /* ----- STEP 4 INPUTS ----- */
+    .adi-input-section { background: #f8fafd; border-radius: 36px; padding: 2rem; border: 2px dashed #cbd5e1; margin: 1.5rem 0 2.5rem; animation: fadeIn 0.4s ease; }
+    .adi-select, .adi-input { width: 100%; padding: 0.8rem 1.2rem; border-radius: 50px; border: 2px solid #e2e8f0; font-weight: 500; cursor: pointer; transition: all 0.15s; margin-bottom: 1rem; font-size: 1rem; background: white; }
+    .adi-select:hover, .adi-input:hover, .adi-input:focus { border-color: #F15A24; background: #fff6f0; outline: none; }
+   
+    /* ----- NAVIGATION ROW ----- */
+    .adi-nav-row { display: flex; justify-content: space-between; align-items: center; margin-top: 2rem; }
+    .adi-btn-back { background: transparent; border: 2px solid #cbd5e1; padding: 0.9rem 2.5rem; border-radius: 60px; font-weight: 700; color: #0B1E33; cursor: pointer; transition: all 0.15s; font-size: 1rem; }
+    .adi-btn-back:hover:not(:disabled) { background: #f1f5f9; border-color: #94a3b8; }
+    .adi-btn-back:disabled { opacity: 0.3; cursor: not-allowed; }
+    .adi-btn-estimate { background: #F15A24; border: none; padding: 0.9rem 3rem; border-radius: 60px; font-weight: 700; font-size: 1.1rem; color: white; box-shadow: 0 15px 25px -12px #F15A24; cursor: pointer; transition: all 0.2s; }
+    .adi-btn-estimate:hover:not(:disabled) { background: #e04e1a; transform: scale(1.02); box-shadow: 0 20px 30px -12px #F15A24; }
+    .adi-btn-estimate:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
+   
+    /* ----- LOADING OVERLAY ----- */
+    .adi-loading { background: rgba(255,255,255,0.95); backdrop-filter: blur(8px); border-radius: 48px; padding: 3rem 2rem; text-align: center; margin: 1.5rem 0; animation: pulseGlow 2s infinite; }
+    @keyframes pulseGlow { 0% { box-shadow: 0 0 0 0 rgba(241, 90, 36, 0.2); } 50% { box-shadow: 0 0 30px 10px rgba(241, 90, 36, 0.2); } 100% { box-shadow: 0 0 0 0 rgba(241, 90, 36, 0.2); } }
+    .adi-spinner { width: 80px; height: 80px; border: 6px solid #e9eef3; border-top: 6px solid #F15A24; border-radius: 50%; animation: spin 1s cubic-bezier(0.68, -0.55, 0.27, 1.55) infinite; margin: 1rem auto 2rem; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    .adi-countdown { font-size: 2.5rem; font-weight: 800; color: #0B1E33; text-shadow: 2px 2px 0 rgba(241, 90, 36, 0.2); }
+   
+    /* ----- RESULTS CARD ----- */
+    .adi-result-card { background: linear-gradient(145deg, #f8fafd, #ffffff); border-radius: 48px; padding: 2.5rem; border: 1px solid #e9eef3; animation: slideUp 0.5s ease; }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+    .adi-result-title { font-size: 1.6rem; color: #0B1E33; margin-bottom: 2rem; font-weight: 700; border-left: 6px solid #F15A24; padding-left: 1.5rem; }
+   
+    /* ----- COST TABLE ----- */
+    .adi-cost-table { width: 100%; border-collapse: collapse; table-layout: auto; margin: 2rem 0; background: white; border-radius: 24px; overflow: hidden; box-shadow: 0 10px 25px -10px rgba(0,0,0,0.1); }
+    .adi-cost-table th { background: #0B1E33; color: white; padding: 15px 20px; text-align: left; font-weight: 600; font-size: 1rem; }
+    .adi-cost-table td { padding: 15px 20px; border-bottom: 1px solid #e2e8f0; white-space: normal; word-break: break-word; overflow-wrap: break-word; hyphens: auto; vertical-align: top; line-height: 1.5; }
+    .adi-cost-table tr:last-child td { border-bottom: none; }
+    .adi-cost-table td:first-child { font-weight: 600; background-color: #f9fcff; width: 40%; }
+    .adi-cost-table td:last-child { width: 60%; }
+    .adi-badge { display: inline-block; background: #F15A24; color: white; font-size: 0.7rem; font-weight: 700; padding: 0.3rem 0.8rem; border-radius: 50px; margin-left: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .adi-badge-low { background: #10b981; }
+    .adi-badge-medium { background: #f59e0b; }
+    .adi-badge-high { background: #ef4444; }
+   
+    /* ----- ACTION BUTTONS ----- */
+    .adi-action-row { display: flex; gap: 18px; flex-wrap: wrap; margin: 2.5rem 0 1.5rem; }
+    .adi-schedule-btn { background: #F15A24; border: none; padding: 1rem 2.5rem; border-radius: 60px; font-weight: 700; color: white; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 10px; font-size: 1rem; text-decoration: none; box-shadow: 0 12px 25px -10px #F15A24; }
+    .adi-schedule-btn:hover { background: #e04e1a; transform: scale(1.02); }
+    .adi-restart-btn { background: transparent; border: 2px solid #cbd5e1; padding: 0.9rem 2.2rem; border-radius: 60px; font-weight: 600; margin-top: 1.5rem; cursor: pointer; transition: all 0.15s; display: inline-flex; align-items: center; gap: 8px; }
+    .adi-restart-btn:hover { border-color: #F15A24; background: #fff6f0; }
+    .adi-disclaimer { background: #f1f5f9; border-radius: 60px; padding: 1rem 1.8rem; font-size: 0.9rem; color: #334155; border-left: 4px solid #F15A24; margin-top: 1.5rem; }
+   
+    /* ----- TOAST NOTIFICATION ----- */
+    .adi-toast { position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%); background: #0B1E33; color: white; padding: 1rem 2.5rem; border-radius: 60px; font-weight: 600; box-shadow: 0 20px 40px -10px rgba(0,0,0,0.3); z-index: 1000; animation: toastFade 2.5s forwards; border-left: 6px solid #F15A24; }
+    @keyframes toastFade { 0% { opacity: 0; transform: translateX(-50%) translateY(20px); } 15% { opacity: 1; transform: translateX(-50%) translateY(0); } 85% { opacity: 1; transform: translateX(-50%) translateY(0); } 100% { opacity: 0; transform: translateX(-50%) translateY(-20px); } }
+   
+    /* ----- MOBILE RESPONSIVE ----- */
+    @media (max-width: 600px) { 
+      .adi-options-grid { grid-template-columns: 1fr; } 
+      .adi-header { padding: 0.8rem 1.2rem; } 
+      .adi-header-title { font-size: 1.1rem; } 
+      .adi-header-badge { padding: 0.2rem 1rem; font-size: 0.75rem; } 
+      .adi-step-container { padding: 1.5rem; } 
+      .adi-step-question { font-size: 1.2rem; } 
+      .adi-cost-table td, .adi-cost-table th { padding: 12px 10px; } 
+    }
+  </style>
+
+  <div class="adi-header">
+    <span class="adi-header-icon">💰</span>
+    <span class="adi-header-title">Repair Cost Estimator</span>
+    <span class="adi-header-badge">Jupiter, FL</span>
+  </div>
+  <div class="adi-progress">
+    <div class="adi-progress-fill" id="adiProgressFill" style="width: 25%;"></div>
+  </div>
+  <div class="adi-step-container" id="adiStepContainer"></div>
+
+  <script>
+    (function() {
+      try {
+        const WIDGET = document.getElementById('adi-cost-widget');
+        if (WIDGET.dataset.initialized === 'true') return;
+        WIDGET.dataset.initialized = 'true';
+
+        // ==================== CONFIG ====================
+        const BUSINESS_PHONE = "5615550123";
+        const BUSINESS_NAME = "Appliance Repair Jupiter";
+        const totalSteps = 4;
+
+        // ==================== STATE ====================
+        let currentStep = 1;
+        let selections = { appliance: null, brand: null, issue: null, severity: null, age: null, zip: null };
+
+        const container = document.getElementById('adiStepContainer');
+        const progressFill = document.getElementById('adiProgressFill');
+
+        // ==================== FULL DATA (copied exactly from your original) ====================
+        const brandMap = {
+          'BBQ': ['Weber', 'Traeger', 'Napoleon', 'Char-Broil', 'Broil King', 'Big Green Egg', 'Kamado Joe', 'Other'],
+          'Coffee System': ['Miele', 'Bosch', 'Jura', 'DeLonghi', 'Saeco', 'Gaggia', 'Nespresso', 'Other'],
+          'Cooktop': ['Bosch', 'Thermador', 'Wolf', 'GE', 'Whirlpool', 'KitchenAid', 'Jenn-Air', 'Dacor', 'Miele', 'Viking', 'Other'],
+          'Dishwasher': ['Bosch', 'KitchenAid', 'Whirlpool', 'GE', 'Miele', 'Frigidaire', 'Samsung', 'LG', 'Maytag', 'Cove', 'Fisher & Paykel', 'Viking', 'Thermador', 'Other'],
+          'Dryer': ['Whirlpool', 'GE', 'Samsung', 'LG', 'Maytag', 'Electrolux', 'Bosch', 'Kenmore', 'Amana', 'Haier', 'Frigidaire', 'Speed Queen', 'Miele', 'Other'],
+          'Freezer': ['Frigidaire', 'Whirlpool', 'GE', 'Danby', 'Midea', 'Kenmore', 'Amana', 'Other'],
+          'Garbage Disposal': ['InSinkErator', 'Waste King', 'Moen', 'GE', 'Whirlpool', 'KitchenAid', 'Other'],
+          'Ice Maker': ['Scotsman', 'Manitowoc', 'Whynter', 'NewAir', 'EdgeStar', 'Hoshizaki', 'Other'],
+          'Microwave': ['Panasonic', 'Samsung', 'LG', 'Whirlpool', 'GE', 'Sharp', 'Frigidaire', 'Bosch', 'Other'],
+          'Oven/Range': ['GE', 'Whirlpool', 'Samsung', 'LG', 'Frigidaire', 'Bosch', 'Thermador', 'Viking', 'Wolf', 'Miele', 'KitchenAid', 'Jenn-Air', 'Dacor', 'Other'],
+          'Pool Heater': ['Hayward', 'Pentair', 'Jandy', 'Raypak', 'Sta-Rite', 'Lochinvar', 'Other'],
+          'Range Hood': ['Broan', 'Zephyr', 'Faber', 'Viking', 'KitchenAid', 'Whirlpool', 'GE', 'Other'],
+          'Refrigerator': ['Sub-Zero', 'Whirlpool', 'Samsung', 'LG', 'GE', 'Frigidaire', 'KitchenAid', 'Maytag', 'Bosch', 'Viking', 'Thermador', 'Electrolux', 'Haier', 'Fisher & Paykel', 'Miele', 'Jenn-Air', 'Wolf', 'Dacor', 'Amana', 'Other'],
+          'Stove': ['Whirlpool', 'GE', 'Frigidaire', 'Samsung', 'LG', 'Magic Chef', 'Amana', 'Kenmore', 'Other'],
+          'Trash Compactor': ['Whirlpool', 'GE', 'Broan', 'KitchenAid', 'Kenmore', 'Other'],
+          'Vent Hood': ['Broan', 'Zephyr', 'Faber', 'Best', 'Viking', 'Other'],
+          'Warming Drawer': ['Wolf', 'Thermador', 'KitchenAid', 'Jenn-Air', 'Viking', 'Other'],
+          'Washing Machine': ['Whirlpool', 'LG', 'Samsung', 'GE', 'Maytag', 'Electrolux', 'Bosch', 'Kenmore', 'Amana', 'Haier', 'Frigidaire', 'Speed Queen', 'Miele', 'Other'],
+          'Wine Cooler': ['NewAir', 'Whynter', 'EdgeStar', 'Vinotemp', 'Kalamera', 'Avallon', 'Other']
+        };
+
+        const appliances = Object.keys(brandMap).sort();
+
+        const issuesByAppliance = {
+          'Refrigerator': [
+            {name: "Temperature fluctuations", severity: "major"},
+            {name: "Ice maker problems", severity: "moderate"},
+            {name: "Water dispenser slow", severity: "minor"},
+            {name: "Excessive frost", severity: "moderate"},
+            {name: "Noisy operation", severity: "minor"},
+            {name: "Door seal leaks", severity: "moderate"},
+            {name: "Odors inside", severity: "minor"},
+            {name: "Condensation on doors", severity: "minor"}
+          ],
+          'Washing Machine': [
+            {name: "Mold/mildew smell", severity: "minor"},
+            {name: "Not draining properly", severity: "major"},
+            {name: "Vibration during spin", severity: "moderate"},
+            {name: "Leaking water", severity: "major"},
+            {name: "Clothes not clean", severity: "moderate"},
+            {name: "Loud noises", severity: "moderate"},
+            {name: "Detergent residue", severity: "minor"},
+            {name: "Door lock issues", severity: "major"}
+          ],
+          'Dryer': [
+            {name: "Clothes taking too long", severity: "moderate"},
+            {name: "Not heating properly", severity: "major"},
+            {name: "Excessive lint", severity: "minor"},
+            {name: "Squeaking noise", severity: "minor"},
+            {name: "Tumbling but no heat", severity: "major"},
+            {name: "Overheating", severity: "major"},
+            {name: "Timer not working", severity: "moderate"},
+            {name: "Drum not turning", severity: "major"}
+          ],
+          'Dishwasher': [
+            {name: "Dishes not clean", severity: "moderate"},
+            {name: "Water not draining", severity: "major"},
+            {name: "Leaking from door", severity: "moderate"},
+            {name: "Odors inside", severity: "minor"},
+            {name: "Cloudy glassware", severity: "minor"},
+            {name: "Not drying dishes", severity: "moderate"},
+            {name: "Strange noises", severity: "minor"},
+            {name: "Detergent not dispensing", severity: "moderate"}
+          ],
+          'Oven/Range': [
+            {name: "Uneven baking", severity: "moderate"},
+            {name: "Oven not heating", severity: "major"},
+            {name: "Gas smell", severity: "major"},
+            {name: "Self-cleaning issues", severity: "minor"},
+            {name: "Temperature inaccuracy", severity: "moderate"},
+            {name: "Broken igniter", severity: "major"},
+            {name: "Knobs sticking", severity: "minor"},
+            {name: "Door not sealing", severity: "moderate"}
+          ],
+          'Stove': [
+            {name: "Burners not lighting", severity: "major"},
+            {name: "Uneven flame", severity: "moderate"},
+            {name: "Burner clicks constantly", severity: "minor"},
+            {name: "Coil burners not working", severity: "major"},
+            {name: "Scratched cooktop", severity: "minor"},
+            {name: "Knobs broken", severity: "minor"},
+            {name: "Heat too high/low", severity: "moderate"}
+          ],
+          'Cooktop': [
+            {name: "Scratched glass", severity: "minor"},
+            {name: "Burner not working", severity: "major"},
+            {name: "Touch controls unresponsive", severity: "moderate"},
+            {name: "Cracked surface", severity: "major"},
+            {name: "Hot spots", severity: "moderate"},
+            {name: "Indicator lights not working", severity: "minor"}
+          ],
+          'Microwave': [
+            {name: "Not heating", severity: "major"},
+            {name: "Turntable not spinning", severity: "minor"},
+            {name: "Spark inside", severity: "major"},
+            {name: "Door won't close", severity: "moderate"},
+            {name: "Keypad unresponsive", severity: "moderate"},
+            {name: "Loud noise", severity: "minor"},
+            {name: "Display not working", severity: "minor"}
+          ],
+          'Freezer': [
+            {name: "Frost buildup", severity: "moderate"},
+            {name: "Not freezing properly", severity: "major"},
+            {name: "Door seal frost", severity: "moderate"},
+            {name: "Noisy operation", severity: "minor"},
+            {name: "Water leaking", severity: "major"},
+            {name: "Temperature fluctuations", severity: "major"},
+            {name: "Ice cream too soft", severity: "moderate"}
+          ],
+          'Garbage Disposal': [
+            {name: "Jammed frequently", severity: "moderate"},
+            {name: "Bad odors", severity: "minor"},
+            {name: "Leaking from bottom", severity: "major"},
+            {name: "Not turning on", severity: "major"},
+            {name: "Humming but not grinding", severity: "moderate"},
+            {name: "Slow draining", severity: "minor"},
+            {name: "Rust inside", severity: "major"}
+          ],
+          'Ice Maker': [
+            {name: "No ice production", severity: "major"},
+            {name: "Small or hollow ice", severity: "moderate"},
+            {name: "Ice tastes bad", severity: "minor"},
+            {name: "Mold inside", severity: "moderate"},
+            {name: "Leaking water", severity: "major"},
+            {name: "Too much noise", severity: "minor"},
+            {name: "Ice dumping constantly", severity: "moderate"}
+          ],
+          'Range Hood': [
+            {name: "Grease buildup", severity: "minor"},
+            {name: "Fan noisy", severity: "minor"},
+            {name: "Light not working", severity: "minor"},
+            {name: "Not venting properly", severity: "moderate"},
+            {name: "Fan speed low", severity: "moderate"},
+            {name: "Vibration noise", severity: "minor"},
+            {name: "Filter needs replacement", severity: "minor"}
+          ],
+          'Wine Cooler': [
+            {name: "Temperature too warm", severity: "major"},
+            {name: "Vibration issues", severity: "moderate"},
+            {name: "Condensation inside", severity: "minor"},
+            {name: "Noisy compressor", severity: "minor"},
+            {name: "Door seal problems", severity: "moderate"},
+            {name: "Frost buildup", severity: "moderate"},
+            {name: "Not cooling", severity: "major"}
+          ],
+          'Warming Drawer': [
+            {name: "Not heating enough", severity: "major"},
+            {name: "Drawer sticking", severity: "minor"},
+            {name: "Too hot", severity: "moderate"},
+            {name: "Temperature inconsistent", severity: "moderate"},
+            {name: "Handle loose", severity: "minor"},
+            {name: "Not staying closed", severity: "minor"}
+          ],
+          'Vent Hood': [
+            {name: "Grease filters clogged", severity: "minor"},
+            {name: "Fan motor weak", severity: "moderate"},
+            {name: "Lights flickering", severity: "minor"},
+            {name: "Exhaust not working", severity: "major"},
+            {name: "Noisy operation", severity: "minor"},
+            {name: "Remote not working", severity: "minor"}
+          ],
+          'Trash Compactor': [
+            {name: "Not compacting", severity: "major"},
+            {name: "Odors inside", severity: "minor"},
+            {name: "Key won't turn", severity: "moderate"},
+            {name: "Drawer stuck", severity: "moderate"},
+            {name: "Noisy operation", severity: "minor"},
+            {name: "Ram not moving", severity: "major"}
+          ],
+          'Coffee System': [
+            {name: "Scale buildup", severity: "moderate"},
+            {name: "Weak coffee", severity: "minor"},
+            {name: "Not brewing", severity: "major"},
+            {name: "Leaking water", severity: "major"},
+            {name: "Grinder loud", severity: "minor"},
+            {name: "Milk frother not working", severity: "moderate"},
+            {name: "Error messages", severity: "moderate"}
+          ],
+          'BBQ': [
+            {name: "Grease flare-ups", severity: "moderate"},
+            {name: "Uneven heating", severity: "moderate"},
+            {name: "Igniter not working", severity: "minor"},
+            {name: "Rust on grates", severity: "minor"},
+            {name: "Gas leak smell", severity: "major"},
+            {name: "Temperature gauge broken", severity: "minor"},
+            {name: "Burners clogged", severity: "moderate"}
+          ],
+          'Pool Heater': [
+            {name: "Not heating water", severity: "major"},
+            {name: "Error codes", severity: "moderate"},
+            {name: "Pilot light issues", severity: "moderate"},
+            {name: "Scaling/calcium", severity: "minor"},
+            {name: "Low flow error", severity: "moderate"},
+            {name: "Noisy operation", severity: "minor"},
+            {name: "Gas smell", severity: "major"}
+          ]
+        };
+
+        const ageDisplay = {
+          '0-5': '0–5 years',
+          '6-10': '6–10 years',
+          '11-15': '11–15 years',
+          '16+': '16+ years'
+        };
+
+        // ==================== HELPERS ====================
+        function showToast(message) {
+          const toast = document.createElement('div');
+          toast.className = 'adi-toast';
+          toast.textContent = message;
+          document.body.appendChild(toast);
+          setTimeout(() => toast.remove(), 2500);
+        }
+
+        function getStepQuestion() {
+          const questions = ['Select your appliance', 'Select the brand', 'What is the main issue?', 'How old is the appliance?'];
+          return questions[currentStep - 1];
+        }
+
+        // ==================== RENDER STEPS (FULLY IMPLEMENTED) ====================
+        function renderStep1() {
+          let html = '<div class="adi-options-grid">';
+          appliances.forEach(app => {
+            const selected = selections.appliance === app ? 'selected' : '';
+            html += `<label class="adi-option-card ${selected}">
+              <input type="radio" name="step1" value="${app}" ${selected ? 'checked' : ''}>
+              <span>${app}</span>
+            </label>`;
+          });
+          html += '</div>';
+          return html;
+        }
+
+        function renderStep2() {
+          if (!selections.appliance) { currentStep = 1; render(); return ''; }
+          const brands = brandMap[selections.appliance] || ['Other'];
+          let html = '<div class="adi-options-grid">';
+          brands.forEach(brand => {
+            const selected = selections.brand === brand ? 'selected' : '';
+            html += `<label class="adi-option-card ${selected}">
+              <input type="radio" name="step2" value="${brand}" ${selected ? 'checked' : ''}>
+              <span>${brand}</span>
+            </label>`;
+          });
+          html += '</div>';
+          return html;
+        }
+
+        function renderStep3() {
+          if (!selections.appliance) { currentStep = 1; render(); return ''; }
+          const issues = issuesByAppliance[selections.appliance] || [];
+          let html = '<div class="adi-options-grid">';
+          issues.forEach(issue => {
+            const selected = selections.issue === issue.name ? 'selected' : '';
+            html += `<label class="adi-option-card ${selected}">
+              <input type="radio" name="step3" value="${issue.name}" data-severity="${issue.severity}" ${selected ? 'checked' : ''}>
+              <span>${issue.name}</span>
+            </label>`;
+          });
+          html += '</div>';
+          return html;
+        }
+
+        function renderStep4() {
+          let html = '<div class="adi-input-section">';
+          html += `
+            <select id="age-select" class="adi-select">
+              <option value="">Select age range</option>
+              <option value="0-5" ${selections.age === '0-5' ? 'selected' : ''}>0 - 5 years</option>
+              <option value="6-10" ${selections.age === '6-10' ? 'selected' : ''}>6 - 10 years</option>
+              <option value="11-15" ${selections.age === '11-15' ? 'selected' : ''}>11 - 15 years</option>
+              <option value="16+" ${selections.age === '16+' ? 'selected' : ''}>16+ years</option>
+            </select>
+            <p style="margin:15px 0 8px; font-weight:600;">Zip Code (Jupiter area)</p>
+            <input type="text" id="zip-input" class="adi-input" maxlength="5" placeholder="33458" value="${selections.zip || ''}">
+          `;
+          html += '</div>';
+          return html;
+        }
+
+        function render() {
+          const stepHtml = `
+            <div class="adi-step-header">
+              <span class="adi-step-question">${getStepQuestion()}</span>
+              <span class="adi-step-counter">Step ${currentStep} of ${totalSteps}</span>
+            </div>
+            ${currentStep === 1 ? renderStep1() : ''}
+            ${currentStep === 2 ? renderStep2() : ''}
+            ${currentStep === 3 ? renderStep3() : ''}
+            ${currentStep === 4 ? renderStep4() : ''}
+            <div class="adi-nav-row">
+              <button class="adi-btn-back" id="adiBackBtn" ${currentStep === 1 ? 'disabled' : ''}>← Back</button>
+              ${currentStep === 4 ? `<button class="adi-btn-estimate" id="adiEstimateBtn">Estimate Cost →</button>` : '<div></div>' }
+            </div>
+          `;
+          container.innerHTML = stepHtml;
+          attachListeners();
+          updateProgress();
+        }
+
+        function updateProgress() {
+          progressFill.style.width = (currentStep * 25) + '%';
+        }
+
+        // ==================== EVENT LISTENERS ====================
+        function attachListeners() {
+          document.querySelectorAll('.adi-option-card input[type="radio"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+              document.querySelectorAll(`.adi-option-card input[name="${this.name}"]`).forEach(r => {
+                const card = r.closest('.adi-option-card');
+                card.classList.toggle('selected', r.checked);
+              });
+
+              if (this.name === 'step1') {
+                selections.appliance = this.value;
+                selections.brand = selections.issue = selections.severity = selections.age = selections.zip = null;
+                setTimeout(() => { currentStep = 2; render(); }, 280);
+              } else if (this.name === 'step2') {
+                selections.brand = this.value;
+                selections.issue = selections.severity = selections.age = selections.zip = null;
+                setTimeout(() => { currentStep = 3; render(); }, 280);
+              } else if (this.name === 'step3') {
+                selections.issue = this.value;
+                selections.severity = this.dataset.severity;
+                selections.age = selections.zip = null;
+                setTimeout(() => { currentStep = 4; render(); }, 280);
+              }
+            });
+          });
+
+          const backBtn = document.getElementById('adiBackBtn');
+          if (backBtn) backBtn.addEventListener('click', () => { if (currentStep > 1) { currentStep--; render(); } });
+
+          const estBtn = document.getElementById('adiEstimateBtn');
+          if (estBtn) {
+            estBtn.addEventListener('click', () => {
+              const ageSelect = document.getElementById('age-select');
+              const zipInput = document.getElementById('zip-input');
+
+              if (!ageSelect.value) return showToast("Please select the age of your appliance");
+              if (!zipInput.value || !/^\d{5}$/.test(zipInput.value)) return showToast("Please enter a valid 5-digit zip code");
+
+              selections.age = ageSelect.value;
+              selections.zip = zipInput.value.trim();
+              generateEstimate();
+            });
+          }
+        }
+
+        // ==================== CALCULATION & RESULTS ====================
+        function calculateEstimate() {
+          let base = 150 + Math.random() * 120;
+          const applianceBase = { 'Refrigerator': 220, 'Washing Machine': 170, 'Dryer': 160, 'Dishwasher': 180, 'Oven/Range': 200, 'Stove': 140, 'Cooktop': 150, 'Microwave': 100, 'Freezer': 190, 'Garbage Disposal': 110, 'Ice Maker': 130, 'Range Hood': 120, 'Wine Cooler': 210, 'Warming Drawer': 140, 'Vent Hood': 115, 'Trash Compactor': 160, 'Coffee System': 180, 'BBQ': 150, 'Pool Heater': 280 };
+          base += applianceBase[selections.appliance] || 130;
+
+          const premiumBrands = ['Sub-Zero','Viking','Thermador','Miele','Wolf','Dacor','Jenn-Air','Bosch'];
+          if (premiumBrands.includes(selections.brand)) base *= 1.28;
+          else if (selections.brand === 'Other') base *= 0.92;
+
+          if (selections.severity === 'major') base += 160;
+          else if (selections.severity === 'moderate') base += 85;
+          else base += 45;
+
+          if (selections.age === '16+') base *= 1.38;
+          else if (selections.age === '11-15') base *= 1.26;
+          else if (selections.age === '6-10') base *= 1.14;
+
+          if (selections.zip.startsWith('334')) base *= 0.90;
+
+          const variance = Math.random() * 0.22 - 0.11;
+          base = Math.round(base * (1 + variance));
+
+          return {
+            partsLow: Math.round(base * 0.38),
+            partsHigh: Math.round(base * 0.62),
+            laborLow: Math.round(base * 0.32),
+            laborHigh: Math.round(base * 0.52),
+            totalLow: Math.round(base * 0.7),
+            totalHigh: Math.round(base * 1.3)
+          };
+        }
+
+        function generateEstimate() {
+          const { appliance, brand, issue, age, zip, severity } = selections;
+          container.innerHTML = `
+            <div class="adi-loading">
+              <div class="adi-spinner"></div>
+              <div style="font-size:1.8rem; font-weight:700; color:#0B1E33;">Calculating Estimate</div>
+              <div class="adi-countdown" id="adiCountdown">4</div>
+              <p style="margin-top:1.5rem; font-size:1.1rem;">For your <strong>${brand} ${appliance}</strong><br>Issue: ${issue}<br>Age: ${ageDisplay[age]}<br>Zip: ${zip}</p>
+            </div>
+          `;
+
+          let count = 4;
+          const cd = document.getElementById('adiCountdown');
+          const int = setInterval(() => { count--; if (cd) cd.textContent = count; if (count <= 0) clearInterval(int); }, 900);
+
+          setTimeout(() => {
+            clearInterval(int);
+            const est = calculateEstimate();
+            const sevClass = severity === 'major' ? 'adi-badge-high' : severity === 'moderate' ? 'adi-badge-medium' : 'adi-badge-low';
+
+            container.innerHTML = `
+              <div class="adi-result-card">
+                <div class="adi-result-title">✅ Estimated Repair Cost: $${est.totalLow} – $${est.totalHigh}</div>
+                <p style="margin-bottom:1.5rem; color:#475569;">Based on your ${brand} ${appliance} • ${issue}</p>
+                <table class="adi-cost-table">
+                  <thead><tr><th>Breakdown</th><th>Range</th></tr></thead>
+                  <tbody>
+                    <tr><td>Parts <span class="adi-badge ${sevClass}">${severity.toUpperCase()}</span></td><td>$${est.partsLow} – $${est.partsHigh}</td></tr>
+                    <tr><td>Labor & Service</td><td>$${est.laborLow} – $${est.laborHigh}</td></tr>
+                    <tr><td><strong>Total Estimated Cost</strong></td><td><strong>$${est.totalLow} – $${est.totalHigh}</strong></td></tr>
+                  </tbody>
+                </table>
+                <p><strong>Factors considered:</strong></p>
+                <ul style="padding-left:18px; line-height:1.7; color:#444;">
+                  <li>${appliance} + ${issue} (${severity} severity)</li>
+                  <li>${brand} parts & labor</li>
+                  <li>Appliance age: ${ageDisplay[age]}</li>
+                  ${zip.startsWith('334') ? '<li>Local Jupiter service discount applied ✓</li>' : ''}
+                </ul>
+                <div class="adi-action-row">
+                  <a href="tel:+1${BUSINESS_PHONE}" style="text-decoration:none;">
+                    <button class="adi-schedule-btn">📞 Get Free Quote from ${BUSINESS_NAME}</button>
+                  </a>
+                </div>
+                <div class="adi-disclaimer">⚠️ Estimates are approximate. Actual cost confirmed after on-site diagnosis.<br><strong>Free quotes • Same-day service in Jupiter, FL</strong></div>
+                <button class="adi-restart-btn" id="adiRestartBtn">↻ Start New Estimate</button>
+              </div>
+            `;
+
+            document.getElementById('adiRestartBtn').addEventListener('click', () => {
+              selections = { appliance: null, brand: null, issue: null, severity: null, age: null, zip: null };
+              currentStep = 1;
+              render();
+            });
+          }, 2200 + Math.random() * 1800);
+        }
+
+        // ==================== START ====================
+        render();
+
+      } catch (e) {
+        console.error('Widget error:', e);
+        container.innerHTML = '<p style="color:red;text-align:center;padding:3rem;">Error loading estimator. Please refresh.</p>';
+      }
+    })();
+  </script>
+</div>
